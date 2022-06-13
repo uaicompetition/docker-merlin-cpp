@@ -3,7 +3,7 @@
 ## Preparation in local environment
 We will create docker images locally and test it first and then upload it to Docker hub.
 Two ways to sync images
-(1) Upload image to Dockerhub so that we can later use docker://username:reponame
+(1) Upload image to Dockerhub so that we can later use docker://username:reponame 
 (2) Send Zip file and build image locally and use it again 
 
 
@@ -35,7 +35,7 @@ RUN ln -s /merlin/boost_1_53_0/boost /usr/local/include/boost
 RUN make clean && make
 
 
-CMD ["bash", "-c", "echo $INPUT; /merlin/bin/merlin --input-file $MODEL --evidence-file $EVID --task MAR --algorithm wmb --ibound 4 --output-file $RESULT"] 
+CMD ["bash", "-c", "echo $MODEL; /merlin/bin/merlin --input-file $MODEL --evidence-file $EVID --task MAR --algorithm wmb --ibound 4 --output-file $RESULT"] 
 ```
 
 This step has to be done by each participants and submitted solvers should work without error.
@@ -46,25 +46,29 @@ Once we have a working docker script we have two options
 
 To build a Docker image and running container,
 
-`$ docker build -t junkyul:merlin .`
+`$ docker build -t junkyul/merlin .`
 ```
-# -t is the tag of image, junkyul:merlin follows convention that junkyul is ID of docker hub, merlin is the name of Docker image repo. To use Dockerhub, make an ID and create repo, install Docker hub Desktop and login (follow instructions https://docs.docker.com/docker-hub/)
+# -t is the tag of image, 
+junkyul/merlin follows convention that junkyul is ID of docker hub, merlin is the name of Docker image repo. 
+To use Dockerhub, make an ID and create repo, install Docker hub Desktop and login 
+(follow instructions https://docs.docker.com/docker-hub/)
 ```
 
 After building it, we can run container by
 
-`$ docker run -v /home/junkyul/samples:/merlins/problems -e INPUT=/merlins/problems/Alchemy_11.uai -e EVID=/merlins/problems/Alchemy_11.uai.evid junkyul/merlin`
+`$ docker run -v /home/junkyul/samples:/merlins/problems -e MODEL=/merlins/problems/Alchemy_11.uai -e EVID=/merlins/problems/Alchemy_11.uai.evid junkyul/merlin`
 
 ```
 # -v is for mounting a volum at host (local hard drive) to Docker container so that we can use Docker as an executable. Here we are mounting  /home/junkyul/samples, which contains Alchemy_11 as sample problem to /merlins/comp
 # we use environment variable to pass file names to Docker
-# ENV INPUT input.uai
+# ENV MODEL input.uai
 # ENV EVID evid.uai
 # ENV QUERY query.uai
+# ENV RESULT result.uai
 ```
 
 After running the container we can confirm that the output file is also written in the same folder by
-`CMD ["bash", "-c", "echo $INPUT; /merlin/bin/merlin --input-file $MODEL --evidence-file $EVID --task MAR --algorithm wmb --ibound 4 --output-file $RESULT"] `
+`CMD ["bash", "-c", "echo $MODEL; /merlin/bin/merlin --input-file $MODEL --evidence-file $EVID --task MAR --algorithm wmb --ibound 4 --output-file $RESULT"] `
 
 This step checks whether the Docker image is valid in local environment.
 Next, upload image to Docker hub (preferred) or send ZIP file containing all the necessary files
@@ -87,7 +91,7 @@ $ docker push <ID>/<REPONAME>
 Our openlab uses singularity for running Docker containers.
 
 Build a SIF singularity image by
-`singularity build --bind /home/junkyul/samples:/merlin/comp merlin.sif docker://junkyul/merlin`
+`singularity build --bind /home/junkyul/samples:/merlin/problems merlin.sif docker://junkyul/merlin`
 
 ```
 # --bind is like -v in docker build
@@ -97,7 +101,7 @@ Build a SIF singularity image by
 ```
 
 After building an image, we can run it by
-`singularity run --bind /home/junkyul/samples:/merlin/comp --env INPUT=/merlin/comp/Alchemy_11.uai,EVID=/merlin/comp/Alchemcy_11.uai.evid merlin.sif`
+`singularity run --bind /home/junkyul/samples:/merlin/problems --env INPUT=/merlin/problems/Alchemy_11.uai,EVID=/merlin/problems/Alchemcy_11.uai.evid merlin.sif`
 
 ```
 # the command is like $ singularity run [OPTIONS] merlin.sif
